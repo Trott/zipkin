@@ -25,7 +25,7 @@ struct LogEntry
   2:  string message
 }
 
-service scribe
+service Scribe
 {
   ResultCode Log(1: list<LogEntry> messages);
 }
