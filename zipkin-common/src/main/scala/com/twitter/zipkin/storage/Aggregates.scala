@@ -35,6 +35,9 @@ trait Aggregates {
 }
 
 class NullAggregates extends Aggregates {
+
+  def close() {}
+
   def getDependencies(serviceName: String)         = Future(Seq.empty[String])
   def getTopAnnotations(serviceName: String)         = Future(Seq.empty[String])
   def getTopKeyValueAnnotations(serviceName: String) = Future(Seq.empty[String])
