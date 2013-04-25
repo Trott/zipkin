@@ -59,7 +59,6 @@ class ZipkinQuery(
   def shutdown() {
     log.info("Shutting down query thrift service.")
     thriftServer.close()
-    ServiceTracker.shutdown
   }
 }
 
