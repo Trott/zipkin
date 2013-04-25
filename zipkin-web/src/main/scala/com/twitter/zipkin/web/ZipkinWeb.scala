@@ -32,7 +32,7 @@ class ZipkinWeb(
   serverPort: Int,
   tracerFactory: Tracer.Factory,
   exceptionMonitorFactory: exception.MonitorFactory,
-  queryClient: Service[ThriftClientRequest, Array[Byte]]
+  queryClient: Service[_,_]
 ) extends admin.Service {
 
   val log = Logger.get()
