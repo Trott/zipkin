@@ -1,8 +1,6 @@
 import sbt._
-import com.twitter.sbt._
 import com.twitter.scrooge.ScroogeSBT
 import sbt.Keys._
-import java.io.File
 
 object Zipkin extends Build {
 
@@ -30,7 +28,7 @@ object Zipkin extends Build {
     version := "1.1.0-SNAPSHOT",
     crossPaths := false            /* Removes Scala version from artifact name */
   )
-  def defaultSettings = Project.defaultSettings ++ StandardProject.newSettings ++ TravisCiRepos.newSettings ++ zipkinSettings ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
+  def defaultSettings = Project.defaultSettings ++ ZipkinResolver.newSettings ++ zipkinSettings ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
 
   lazy val zipkin =
     Project(
@@ -150,8 +148,8 @@ object Zipkin extends Build {
   ).settings(
     libraryDependencies ++= testDependencies,
 
-    PackageDist.packageDistZipName := "zipkin-query-service.zip",
-    BuildProperties.buildPropertiesPackage := "com.twitter.zipkin",
+//    PackageDist.packageDistZipName := "zipkin-query-service.zip",
+//    BuildProperties.buildPropertiesPackage := "com.twitter.zipkin",
 
     /* Add configs to resource path for ConfigSpec */
     unmanagedResourceDirectories in Test <<= baseDirectory {
@@ -192,8 +190,8 @@ object Zipkin extends Build {
   ).settings(
     libraryDependencies ++= testDependencies,
 
-    PackageDist.packageDistZipName := "zipkin-collector-service.zip",
-    BuildProperties.buildPropertiesPackage := "com.twitter.zipkin",
+//    PackageDist.packageDistZipName := "zipkin-collector-service.zip",
+//    BuildProperties.buildPropertiesPackage := "com.twitter.zipkin",
 
     /* Add configs to resource path for ConfigSpec */
     unmanagedResourceDirectories in Test <<= baseDirectory {
@@ -209,7 +207,7 @@ object Zipkin extends Build {
       settings = defaultSettings
     ).settings(
       libraryDependencies ++= Seq(
-        "com.twitter" % "finatra" % "1.3.0",
+        "com.twitter" % "finatra" % "1.3.1",
 
         "com.twitter.common.zookeeper" % "server-set" % "1.0.36",
 
@@ -218,8 +216,8 @@ object Zipkin extends Build {
         "com.twitter" % "finagle-exception"  % FINAGLE_VERSION
       ) ++ testDependencies,
 
-      PackageDist.packageDistZipName := "zipkin-web.zip",
-      BuildProperties.buildPropertiesPackage := "com.twitter.zipkin",
+//      PackageDist.packageDistZipName := "zipkin-web.zip",
+//      BuildProperties.buildPropertiesPackage := "com.twitter.zipkin",
 
       /* Add configs to resource path for ConfigSpec */
       unmanagedResourceDirectories in Test <<= baseDirectory {
@@ -248,37 +246,3 @@ object Zipkin extends Build {
   ).dependsOn(scrooge)
 }
 
-/*
- * We build our project using Travis CI. In order for it to finish in the max run time,
- * we need to use their local maven mirrors.
- */
-object TravisCiRepos extends Plugin with Environmentalist {
-  val travisCiResolvers = SettingKey[Seq[Resolver]](
-    "travisci-central",
-    "Use these resolvers when building on travis-ci"
-  )
-
-  val localRepo = SettingKey[File](
-    "local-repo",
-    "local folder to use as a repo (and where publish-local publishes to)"
-  )
-
-  val newSettings = Seq(
-    travisCiResolvers := Seq(
-      "travisci-central" at "http://maven.travis-ci.org/nexus/content/repositories/central/",
-      "travisci-sonatype" at "http://maven.travis-ci.org/nexus/content/repositories/sonatype/"
-    ),
-
-    // configure resolvers for the build
-    resolvers <<= (resolvers, travisCiResolvers) { (resolvers, travisCiResolvers) =>
-      if("true".equalsIgnoreCase(System.getenv("SBT_TRAVIS_CI"))) {
-        travisCiResolvers ++ resolvers
-      } else {
-        resolvers
-      }
-    },
-
-    // don't add any special resolvers.
-    externalResolvers <<= (resolvers) map identity
-  )
-}
