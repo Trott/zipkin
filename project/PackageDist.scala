@@ -228,7 +228,7 @@ object PackageDist extends Plugin {
     ) map { (vars, script, scriptOut) =>
       copyTree(script, scriptOut).map { case (source, destination) =>
         destination.getParentFile().mkdirs()
-        //FileFilter.filter(source, destination, vars)
+        com.twitter.sbt.FileFilter.filter(source, destination, vars)
         List("chmod", "+x", destination.absolutePath.toString) !!;
         destination
       }

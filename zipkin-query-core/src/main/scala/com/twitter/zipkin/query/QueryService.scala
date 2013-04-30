@@ -431,6 +431,7 @@ class QueryService(storage: Storage, index: Index, aggregates: Aggregates, adjus
    */
   private def getOrderBy(order: gen.Order) = {
     order match {
+      case gen.Order.None => OrderByDurationDesc
       case gen.Order.DurationDesc => OrderByDurationDesc
       case gen.Order.DurationAsc => OrderByDurationAsc
       case gen.Order.TimestampDesc => OrderByTimestampDesc
