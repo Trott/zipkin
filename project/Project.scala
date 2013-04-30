@@ -1,3 +1,4 @@
+import com.twitter.sbt.{BuildProperties,PackageDist,GitProject}
 import sbt._
 import com.twitter.scrooge.ScroogeSBT
 import sbt.Keys._
@@ -28,13 +29,30 @@ object Zipkin extends Build {
     version := "1.1.0-SNAPSHOT",
     crossPaths := false            /* Removes Scala version from artifact name */
   )
-  def defaultSettings = Project.defaultSettings ++ ZipkinResolver.newSettings ++ zipkinSettings ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
+
+  // settings from inlined plugins
+  def inlineSettings = Seq(
+    // inlined parts of sbt-package-dist
+    GitProject.gitSettings,
+    BuildProperties.newSettings,
+    PackageDist.newSettings,
+
+    // inline scrooge sbt
+    ScroogeSBT.newSettings
+  ).flatten
+
+  def defaultSettings = Seq(
+      zipkinSettings,
+      inlineSettings,
+      Project.defaultSettings,
+      ZipkinResolver.newSettings
+    ).flatten
 
   lazy val zipkin =
     Project(
       id = "zipkin",
       base = file(".")
-    ) aggregate(test, queryCore, queryService, common, scrooge, collectorScribe, web, cassandra, collectorCore, collectorService, kafka, redis)
+    ) aggregate(test, queryCore, queryService, common, scrooge, collectorScribe, web, cassandra, collectorCore, collectorService, kafka) // TODO - add redis back in
 
   lazy val test   = Project(
     id = "zipkin-test",
@@ -148,8 +166,8 @@ object Zipkin extends Build {
   ).settings(
     libraryDependencies ++= testDependencies,
 
-//    PackageDist.packageDistZipName := "zipkin-query-service.zip",
-//    BuildProperties.buildPropertiesPackage := "com.twitter.zipkin",
+    PackageDist.packageDistZipName := "zipkin-query-service.zip",
+    BuildProperties.buildPropertiesPackage := "com.twitter.zipkin",
 
     /* Add configs to resource path for ConfigSpec */
     unmanagedResourceDirectories in Test <<= baseDirectory {
@@ -190,8 +208,8 @@ object Zipkin extends Build {
   ).settings(
     libraryDependencies ++= testDependencies,
 
-//    PackageDist.packageDistZipName := "zipkin-collector-service.zip",
-//    BuildProperties.buildPropertiesPackage := "com.twitter.zipkin",
+    PackageDist.packageDistZipName := "zipkin-collector-service.zip",
+    BuildProperties.buildPropertiesPackage := "com.twitter.zipkin",
 
     /* Add configs to resource path for ConfigSpec */
     unmanagedResourceDirectories in Test <<= baseDirectory {
@@ -216,8 +234,8 @@ object Zipkin extends Build {
         "com.twitter" % "finagle-exception"  % FINAGLE_VERSION
       ) ++ testDependencies,
 
-//      PackageDist.packageDistZipName := "zipkin-web.zip",
-//      BuildProperties.buildPropertiesPackage := "com.twitter.zipkin",
+      PackageDist.packageDistZipName := "zipkin-web.zip",
+      BuildProperties.buildPropertiesPackage := "com.twitter.zipkin",
 
       /* Add configs to resource path for ConfigSpec */
       unmanagedResourceDirectories in Test <<= baseDirectory {

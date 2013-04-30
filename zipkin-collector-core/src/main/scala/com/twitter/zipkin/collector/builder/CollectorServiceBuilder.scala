@@ -131,7 +131,7 @@ case class CollectorServiceBuilder[T](
       stores,
       new InetSocketAddress(serverBuilder.serverAddress, serverBuilder.serverPort),
       serverBuilder.statsReceiver,
-      serverBuilder.tracerFactory)
+      serverBuilder.tracer)
 
     /**
      * Add config endpoints with the sampleRate endpoint. Available via:

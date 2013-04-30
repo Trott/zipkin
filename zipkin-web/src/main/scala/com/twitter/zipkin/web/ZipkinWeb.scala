@@ -30,7 +30,7 @@ class ZipkinWeb(
   app: App,
   resource: Resource,
   serverPort: Int,
-  tracerFactory: Tracer.Factory,
+  tracer: Tracer,
   exceptionMonitorFactory: exception.MonitorFactory,
   queryClient: Service[_,_]
 ) extends admin.Service {
@@ -52,7 +52,7 @@ class ZipkinWeb(
         .codec(new RichHttp[FinagleRequest](Http()))
         .bindTo(new InetSocketAddress(serverPort))
         .name("ZipkinWeb")
-        .tracerFactory(tracerFactory)
+        .tracer(tracer)
         .monitor(exceptionMonitorFactory)
         .build(service)
     }
