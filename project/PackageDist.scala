@@ -151,13 +151,13 @@ object PackageDist extends Plugin {
     exportJars := true,
 
     // export source and docs
-//    (exportedProducts in Compile) <<= (
-//      exportedProducts in Compile,
-//      packageSrc in Compile,
-//      packageDoc in Compile
-//    ) map { (exports, src, doc) =>
-//      exports ++ Seq(Attributed.blank(src), Attributed.blank(doc))
-//    },
+    (exportedProducts in Compile) <<= (
+      exportedProducts in Compile,
+      packageSrc in Compile,
+      packageDoc in Compile
+    ) map { (exports, src, doc) =>
+      exports ++ Seq(Attributed.blank(src), Attributed.blank(doc))
+    },
 
     // write a classpath entry to the manifest
     packageOptions <+= (dependencyClasspath in Compile, mainClass in Compile) map { (cp, main) =>

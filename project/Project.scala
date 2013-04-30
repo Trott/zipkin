@@ -27,7 +27,8 @@ object Zipkin extends Build {
   def zipkinSettings = Seq(
     organization := "com.twitter",
     version := "1.1.0-SNAPSHOT",
-    crossPaths := false            /* Removes Scala version from artifact name */
+    crossPaths := false,            /* Removes Scala version from artifact name */
+    publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath + "/.ivy2/local")))
   )
 
   // settings from inlined plugins
@@ -37,8 +38,15 @@ object Zipkin extends Build {
     BuildProperties.newSettings,
     PackageDist.newSettings,
 
-    // inline scrooge sbt
-    ScroogeSBT.newSettings
+    // modifications and additions
+    Seq(
+      (exportedProducts in Compile) ~= { products =>
+        products.filter { prod =>
+          // don't package source or documentation
+          prod == (packageSrc in Compile) || prod == (packageDoc in Compile)
+        }
+      }
+    )
   ).flatten
 
   def defaultSettings = Seq(
@@ -63,8 +71,6 @@ object Zipkin extends Build {
     libraryDependencies ++= testDependencies
   ) dependsOn(queryService, collectorService)
 
-  // TODO - uncompiled thrift idl target
-
   lazy val common =
     Project(
       id = "zipkin-common",
@@ -83,13 +89,24 @@ object Zipkin extends Build {
       ) ++ testDependencies
     )
 
+  lazy val thriftidl =
+    Project(
+      id = "zipkin-thrift",
+      base = file("zipkin-thrift"),
+      settings = defaultSettings
+    ).settings(
+      // this is a hack to get -idl artifacts for thrift.  Better would be to
+      // define a whole new artifact that gets included in the scrooge publish task
+      (artifactClassifier in packageSrc) := Some("idl")
+    )
+
   lazy val scrooge =
     Project(
       id = "zipkin-scrooge",
       base = file("zipkin-scrooge"),
       settings = defaultSettings ++ ScroogeSBT.newSettings
     ).settings(
-      libraryDependencies ++= Seq(
+        libraryDependencies ++= Seq(
         "com.twitter" %  "finagle-ostrich4"  % FINAGLE_VERSION,
         "com.twitter" %  "finagle-thrift"    % FINAGLE_VERSION,
         "com.twitter" %  "finagle-zipkin"    % FINAGLE_VERSION,
