@@ -14,6 +14,7 @@ object Zipkin extends Build {
 
   val proxyRepo = Option(System.getenv("SBT_PROXY_REPO"))
   val travisCi = Option(System.getenv("SBT_TRAVIS_CI")) // for adding travis ci maven repos before others
+  val cwd = System.getProperty("user.dir")
 
   lazy val testDependencies = Seq(
     "org.scala-tools.testing" %% "specs"        % "1.6.9" % "test",
@@ -28,6 +29,8 @@ object Zipkin extends Build {
     organization := "com.twitter",
     version := "1.1.0-SNAPSHOT",
     crossPaths := false,            /* Removes Scala version from artifact name */
+    fork := true, // forking prevents runaway thread pollution of sbt
+    baseDirectory in run := file(cwd), // necessary for forking
     publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath + "/.ivy2/local")))
   )
 
